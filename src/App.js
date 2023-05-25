@@ -1,10 +1,12 @@
 import logo from './logo.svg';
+import WyattProf from './WyattProf.jpg';
 import './App.css';
 
 function App() {
   return (
     <div className="App">
       <header className="App-header">
+        <image src={WyattProf} height="200" width="200" />
         <img src={logo} className="App-logo" alt="logo" />
         <p>
           Edit <code>src/App.js</code> and save to reload.
@@ -15,7 +17,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn reaction speed. BOOP!
+          Learn reaction speed. NYOOM!
         </a>
       </header>
     </div>
@@ -23,3 +25,5 @@ function App() {
 }
 
 export default App;
+
+/** activated format on save */
