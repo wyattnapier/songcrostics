@@ -22,6 +22,7 @@ function App() {
           Learn reaction speed. NYOOM!
         </a>
         <TestButton />
+        <TestButton />
       </header>
     </div>
   );
