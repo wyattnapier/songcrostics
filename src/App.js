@@ -19,7 +19,7 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn reaction speed. NYOOM!
+          We be doing stuff the hard way!
         </a>
         <TestButton />
         <TestButton />
