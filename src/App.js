@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import axios from 'axios'; // handles HTTP request
 import logo from './logo.svg';
 import WyattProf from './WyattProf.jpg';
 import './App.css';
@@ -10,7 +11,14 @@ function App() {
   const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
   const RESPONSE_TYPE = "token";
 
-  // useEffect and logout functions from https://dev.to/dom_the_dev/how-to-use-the-spotify-api-in-your-react-js-app-50pn
+  const [searchKey, setSearchKey] = useState("");
+  const [artists, setArtists] = useState([]);
+
+  /**
+   * useEffect, logout, searchArtists, and renderArtists functions
+   * all from https://dev.to/dom_the_dev/how-to-use-the-spotify-api-in-your-react-js-app-50pn
+   */
+
   const [token, setToken] = useState("");
   useEffect (() => {
     const hash = window.location.hash;
@@ -25,12 +33,32 @@ function App() {
     setToken(token)
 
   }, [])
-
   const logout = () => {
     setToken("");
     window.localStorage.removeItem("token");
   }
-
+  const searchArtists = async (e) => {
+    e.preventDefault()
+    const {data} = await axios.get("https://api.spotify.com/v1/search", {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }, 
+      params: {
+        q: searchKey,
+        type: "artist"
+      }
+    })
+    setArtists(data.artists.items)
+  }
+  const renderArtists = () => {
+    return artists.map(artist => (
+      <div key={artist.id}>
+        {artist.images.length ? <img width={"100%"} src={artist.images[0].url} alt=""/> 
+        : <div>No Image</div>}
+        {artist.name}
+      </div>
+    ))
+  }
 
   return (
     <div className="App">
@@ -41,6 +69,11 @@ function App() {
             Login to Spotify</a>
             : <button onClick={logout}>Logout</button>
         }
+        <form onSubmit={searchArtists}>
+          <input type="text" onChange={e => setSearchKey(e.target.value)}/>
+          <button type={"submit"}>Search</button>
+        </form>
+        {renderArtists()}
       </div>
 
 
@@ -73,4 +106,5 @@ export default App;
 /** 
  * activated format on save 
  * run code in terminal with yarn start
+ * install axios with yarn add axios
 */
