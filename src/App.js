@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios'; // handles HTTP request
 import logo from './logo.svg';
-import WyattProf from './WyattProf.jpg';
 import './App.css';
 import TestButton from './TestButton';
 
@@ -13,49 +12,72 @@ function App() {
 
   const [searchKey, setSearchKey] = useState("");
   const [artists, setArtists] = useState([]);
+  const [acrosticString, setAcrosticString] = useState("");
+  const [tracks, setTracks] = useState([]);
 
   /**
    * useEffect, logout, searchArtists, and renderArtists functions
    * all from https://dev.to/dom_the_dev/how-to-use-the-spotify-api-in-your-react-js-app-50pn
    */
-
   const [token, setToken] = useState("");
   useEffect (() => {
     const hash = window.location.hash;
     let token = window.localStorage.getItem("token");
-
     if (!token && hash) {
       token = hash.substring(1).split("&").find(elem => elem.startsWith("access_token")).split("=")[1];
       window.location.hash = "";
       window.localStorage.setItem("token", token)
     }
-
     setToken(token)
-
   }, [])
+
   const logout = () => {
     setToken("");
     window.localStorage.removeItem("token");
   }
-  const searchArtists = async (e) => {
+
+  // const searchArtists = async (e) => {
+  //   e.preventDefault()
+  //   const {data} = await axios.get("https://api.spotify.com/v1/search", {
+  //     headers: {
+  //       Authorization: `Bearer ${token}`
+  //     }, 
+  //     params: {
+  //       q: searchKey,
+  //       type: "artist"
+  //     }
+  //   })
+  //   setArtists(data.artists.items)
+  // }
+  // const renderArtists = () => {
+  //   return artists.map(artist => (
+  //     <div key={artist.id}>
+  //       {artist.images.length ? <img width={"100%"} src={artist.images[0].url} alt=""/> 
+  //       : <div>No Image</div>}
+  //       {artist.name}
+  //     </div>
+  //   ))
+  // }
+  const searchTracks = async (e) => {
     e.preventDefault()
     const {data} = await axios.get("https://api.spotify.com/v1/search", {
       headers: {
         Authorization: `Bearer ${token}`
       }, 
       params: {
-        q: searchKey,
-        type: "artist"
+        q: acrosticString,
+        type: "track"
       }
     })
-    setArtists(data.artists.items)
+    setTracks(data.tracks.items)
   }
-  const renderArtists = () => {
-    return artists.map(artist => (
-      <div key={artist.id}>
-        {artist.images.length ? <img width={"100%"} src={artist.images[0].url} alt=""/> 
-        : <div>No Image</div>}
-        {artist.name}
+  const renderTracks = () => {
+    return tracks.map(track => (
+      <div key={track.id}>
+        {/* {track.images.length ? <img width={"100%"} src={track.images[0].url} alt=""/> 
+        : <div>No Image</div>} */}
+        {/* <img width={"100%"} src={track.images[0].url} alt=""/> */}
+        {track.name}
       </div>
     ))
   }
@@ -69,11 +91,17 @@ function App() {
             Login to Spotify</a>
             : <button onClick={logout}>Logout</button>
         }
-        <form onSubmit={searchArtists}>
+        {/* <form onSubmit={searchArtists}>
           <input type="text" onChange={e => setSearchKey(e.target.value)}/>
-          <button type={"submit"}>Search</button>
+          <button type={"submit"}>Search for Artists</button>
         </form>
-        {renderArtists()}
+        {renderArtists()} */}
+
+        <form onSubmit={searchTracks}>
+          <input type="text" onChange={e => setAcrosticString(e.target.value)}/>
+          <button type={"submit"}>Search for Tracks</button>
+        </form>
+        {renderTracks()}
       </div>
 
 
