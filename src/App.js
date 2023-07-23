@@ -13,6 +13,7 @@ function App() {
   const [searchKey, setSearchKey] = useState("");
   const [artists, setArtists] = useState([]);
   const [acrosticString, setAcrosticString] = useState("");
+  const [playlistTitle, setPlaylistTitle] = useState("");
   const [tracks, setTracks] = useState([]);
 
   /**
@@ -58,6 +59,31 @@ function App() {
   //     </div>
   //   ))
   // }
+
+  const createPlaylist = async (e) => {
+    e.preventDefault()
+    console.log("made it here at least")
+    try {
+      console.log("token data: " + token)
+      const response = await axios.post("https://api.spotify.com/v1/me/playlists", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json" // sus line
+        }, 
+        params: {
+          name: playlistTitle,
+          description: "This is an acrostic playlist!",
+          public: false
+        }
+      })
+      console.log("Playlist created:", response.data);
+      alert("Playlist created successfully!");
+    } catch (error) {
+      console.error("Error creating playlist:", error);
+      alert("Error creating playlist. Please check the console for details.");
+    }
+  }
+
   const searchTracks = async (e) => {
     e.preventDefault()
     const {data} = await axios.get("https://api.spotify.com/v1/search", {
@@ -76,7 +102,6 @@ function App() {
       <div key={track.id}>
         {/* {track.images.length ? <img width={"100%"} src={track.images[0].url} alt=""/> 
         : <div>No Image</div>} */}
-        {/* <img width={"100%"} src={track.images[0].url} alt=""/> */}
         {track.name}
       </div>
     ))
@@ -102,13 +127,15 @@ function App() {
           <button type={"submit"}>Search for Tracks</button>
         </form>
         {renderTracks()}
+        <form onSubmit={createPlaylist}>
+          <input type="text" onChange={e => setPlaylistTitle(e.target.value)}/>
+          <button type={"submit"}>Choose your playlist title</button>
+        </form>
       </div>
 
 
-
-
+      {/** ueless stuff */}
       <header className="App-header">
-        {/** <image src={WyattProf} height="200" width="200" /> */}
         <img src={logo} className="App-logo" alt="logo" />
         <h1 className="App-title">Welcome to React</h1>
         <p>
