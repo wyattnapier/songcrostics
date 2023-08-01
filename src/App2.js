@@ -15,6 +15,7 @@ function App2() {
   var access_token = null;
   var refresh_token = null;
 
+  const [loggedIn, setLoggedIn] = useState(false);
   const [searchKey, setSearchKey] = useState("");
   const [artists, setArtists] = useState([]);
   const [acrosticString, setAcrosticString] = useState("");
@@ -22,11 +23,15 @@ function App2() {
   const [tracks, setTracks] = useState([]);
 
   function onPageLoad(){
+    console.log("is this doing anything?")
     // client_id = localStorage.getItem("client_id");
     // client_secret = localStorage.getItem("client_secret");
     // if you haven't logged in yet:
     if ( window.location.search.length > 0 ){
         handleRedirect();
+    } else {
+        setLoggedIn(true);
+        console.log("I thought I just changed it!")
     }
     // else{
     //     access_token = localStorage.getItem("access_token");
@@ -49,6 +54,8 @@ function App2() {
         let code = getCode();
         fetchAccessToken( code );
         window.history.pushState("", "", REDIRECT_URI); // remove param from url
+        setLoggedIn(true);
+        console.log("changing the status of var loggedIn")
     }
 
     function getCode(){
@@ -153,33 +160,17 @@ function App2() {
     <div className="App2" onLoad={onPageLoad}>
       <div className="Spotify Login/Logout"> 
         <h1>Spotify + React</h1>
-        <button onClick={requestAuthorization}>Login!</button>
+        {console.log(loggedIn)}
+        {loggedIn ? (<h4>You're logged in!</h4>) :
+        (
+            <button onClick={requestAuthorization}>Login!</button>
+        )}
         {/* <form onSubmit={searchArtists}>
           <input type="text" onChange={e => setSearchKey(e.target.value)}/>
           <button type={"submit"}>Search for Artists</button>
         </form>
         {renderArtists()} */}
       </div>
-
-
-      {/** ueless stuff */}
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <h1 className="App-title">Welcome to React</h1>
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          We be doing stuff the hard way!
-        </a>
-        <TestButton />
-        <TestButton />
-      </header>
     </div>
   );
 }
