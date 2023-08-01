@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+// import App from './App';
+import App2 from './App2';
 import reportWebVitals from './reportWebVitals';
 
 const element = <h1>Hello World</h1>
@@ -10,7 +11,8 @@ console.log(element);
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    {/* <App /> */}
+    <App2 />
   </React.StrictMode>
 );
 
