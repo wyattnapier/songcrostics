@@ -23,22 +23,19 @@ function App2() {
   const [tracks, setTracks] = useState([]);
 
   function onPageLoad(){
-    console.log("is this doing anything?")
     // client_id = localStorage.getItem("client_id");
     // client_secret = localStorage.getItem("client_secret");
     // if you haven't logged in yet:
     if ( window.location.search.length > 0 ){
         handleRedirect();
-    } else {
-        setLoggedIn(true);
-        console.log("I thought I just changed it!")
     }
-    // else{
-    //     access_token = localStorage.getItem("access_token");
-    //     if ( access_token == null ){
-    //         // we don't have an access token so present token section
-    //         document.getElementById("tokenSection").style.display = 'block';  
-    //     }
+    else{
+        access_token = localStorage.getItem("access_token");
+        if ( access_token == null ){
+            // we don't have an access token so present token section
+            document.getElementById("tokenSection").style.display = 'block';  
+        }
+    }
     //     else {
     //         // we have an access token so present device section
     //         document.getElementById("deviceSection").style.display = 'block';  
@@ -81,6 +78,7 @@ function App2() {
     url += "&show_dialog=true";
     url += "&scope=user-read-private user-read-email user-modify-playback-state user-read-playback-position user-library-read streaming user-read-playback-state user-read-recently-played playlist-read-private";
     window.location.href = url; // Show Spotify's authorization screen
+    console.log("authorization requested");
   }
 
   function fetchAccessToken( code ){
