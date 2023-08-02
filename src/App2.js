@@ -3,11 +3,17 @@ import axios from 'axios'; // handles HTTP request
 import logo from './logo.svg';
 import './App.css';
 import TestButton from './TestButton';
+import dotenv from 'react-dotenv';
 
 function App2() {
-  const CLIENT_ID = "c77e293321794990a3dc1349b1502d75";
-  const CLIENT_SECRET = "20a9dda605164943817d39d1315bf865";
-  const REDIRECT_URI = "http://localhost:3000";
+    // const db = process.env.MONGO_URI; // model for using .env
+    const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
+    const CLIENT_SECRET = process.env.REACT_APP_CLIENT_SECRET;
+    const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
+    console.log("CLIENT_ID:", CLIENT_ID);
+    console.log("CLIENT_SECRET:", CLIENT_SECRET);
+    console.log("REDIRECT_URI:", REDIRECT_URI);
+
   const AUTHORIZE = "https://accounts.spotify.com/authorize";
   const TOKEN = "https://accounts.spotify.com/api/token";
   const RESPONSE_TYPE = "token";
