@@ -10,15 +10,12 @@ function App2() {
     const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
     const CLIENT_SECRET = process.env.REACT_APP_CLIENT_SECRET;
     const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
-    console.log("CLIENT_ID:", CLIENT_ID);
-    console.log("CLIENT_SECRET:", CLIENT_SECRET);
-    console.log("REDIRECT_URI:", REDIRECT_URI);
 
   const AUTHORIZE = "https://accounts.spotify.com/authorize";
   const TOKEN = "https://accounts.spotify.com/api/token";
   const RESPONSE_TYPE = "token";
 
-  var access_token = null;
+  let access_token = null;
   var refresh_token = null;
 
   const [loggedIn, setLoggedIn] = useState(false);
@@ -28,15 +25,20 @@ function App2() {
   const [playlistTitle, setPlaylistTitle] = useState("");
   const [tracks, setTracks] = useState([]);
 
+  useEffect(() => {
+    // code for when component is mounted (on page load)
+    onPageLoad()
+  }, []); // add dependencies to array if you want this to run more frequently
+
   function onPageLoad(){
     // client_id = localStorage.getItem("client_id");
     // client_secret = localStorage.getItem("client_secret");
     // if you haven't logged in yet:
     if ( window.location.search.length > 0 ){
         handleRedirect();
-    }
-    else{
+    } else {
         access_token = localStorage.getItem("access_token");
+        console.log("access token right after getting set: " + access_token)
         if ( access_token == null ){
             // we don't have an access token so present token section
             document.getElementById("tokenSection").style.display = 'block';  
@@ -164,7 +166,8 @@ function App2() {
     <div className="App2" onLoad={onPageLoad}>
       <div className="Spotify Login/Logout"> 
         <h1>Spotify + React</h1>
-        {console.log(loggedIn)}
+        {console.log("access_token: " + access_token)}
+        {console.log("logged in var: " + loggedIn)}
         {loggedIn ? (<h4>You're logged in!</h4>) :
         (
             <button onClick={requestAuthorization}>Login!</button>
