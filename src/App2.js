@@ -40,8 +40,9 @@ function App2() {
         access_token = localStorage.getItem("access_token");
         console.log("access token right after getting set: " + access_token)
         if ( access_token == null ){
-            // we don't have an access token so present token section
-            document.getElementById("tokenSection").style.display = 'block';  
+            // we don't have an access token so set the css display to not loggedIn?
+            // !! ISSUES WITH THIS LINE !!
+            // document.getElementById("tokenSection").style.display = 'block'; 
         }
     }
     //     else {
@@ -84,7 +85,7 @@ function App2() {
     url += "&response_type=code";
     url += "&redirect_uri=" + encodeURI(REDIRECT_URI);
     url += "&show_dialog=true";
-    url += "&scope=user-read-private user-read-email user-modify-playback-state user-read-playback-position user-library-read streaming user-read-playback-state user-read-recently-played playlist-read-private";
+    url += "&scope=user-read-private user-read-email user-modify-playback-state user-read-playback-position user-library-read streaming user-read-playback-state user-read-recently-played playlist-read-private playlist-modify-private";
     window.location.href = url; // Show Spotify's authorization screen
     console.log("authorization requested");
   }
@@ -118,7 +119,7 @@ function App2() {
   function handleAuthorizationResponse(){
     if ( this.status == 200 ){
         var data = JSON.parse(this.responseText);
-        console.log(data);
+        console.log("JSON DATA: " + JSON.stringify(data));
         if ( data.access_token != undefined ){
             access_token = data.access_token;
             localStorage.setItem("access_token", access_token);
@@ -165,6 +166,7 @@ function App2() {
         // setTimeout(currentlyPlaying, 2000);
     }
     else if ( this.status == 401 ){
+        console.log("401")
         refreshAccessToken()
     }
     else {
@@ -172,6 +174,50 @@ function App2() {
         alert(this.responseText);
     }    
   }
+
+  function createPlaylist () {
+    /**
+     *  method: post
+     *  url: https://api.spotify.com/v1/users/{user_id}/playlists
+     * body: {
+        "name": "Songcrostics Playlist",
+        "description": "songcrostics experiment playlist description",
+        "public": false
+       }
+     * 
+    */
+//    let user_id = null;
+//    let url = "https://api.spotify.com/v1/users/"+user_id+"/playlists"
+//    callApi("POST", "https://api.spotify.com/v1/users/me/playlists", {"name": "Songcrostics Playlist",
+//    "description": "songcrostics experiment playlist description",
+//    "public": false}, handleApiResponse)
+
+   //////////////////////////////////// CHAT RECOMMENDATION BELOW
+   
+    // First, make a call to the Spotify Web API to get the user's profile
+    callApi("GET", "https://api.spotify.com/v1/me", null, (response) => {
+      if (response && response.responseText) {
+        // The response will contain the user's profile information, including the user_id
+      const data = JSON.parse(response.responseText);
+      const user_id = data.id;
+    
+      // Now that you have the user_id, you can use it to create the playlist
+      callApi(
+        "POST",
+        `https://api.spotify.com/v1/users/${user_id}/playlists`,
+        {
+          name: "Songcrostics Playlist",
+          description: "songcrostics experiment playlist description",
+          public: false,
+        },
+        handleApiResponse
+      );
+    } else {
+        console.log("error: no response from call")
+    }
+    });
+  }
+  
 
   return (
     <div className="App2">
@@ -183,6 +229,7 @@ function App2() {
             <div>
                 <h4>You're logged in!</h4>
                 <button onClick={logout}>Logout!</button>
+                <button onClick={createPlaylist}>Create a playlist</button>
             </div>
         ) : (
             <div className="loggedOut">
