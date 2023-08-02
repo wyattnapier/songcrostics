@@ -16,7 +16,7 @@ function App2() {
   const RESPONSE_TYPE = "token";
 
   let access_token = null;
-  var refresh_token = null;
+  let refresh_token = null;
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [searchKey, setSearchKey] = useState("");
@@ -135,6 +135,17 @@ function App2() {
     }
   }
 
+  function logout () {
+    /* 
+    * can I remove data from local storage without making it crash or no?
+    * This is currently a pseudo logout button, it doesn't actually do anything but change visuals tbh 
+    */
+    // localStorage.removeItem("access_token")
+    // localStorage.removeItem("refresh_token")
+    setLoggedIn(false)
+    console.log("logging them fools out")
+  }
+
   function callApi(method, url, body, callback){
     let xhr = new XMLHttpRequest();
     xhr.open(method, url, true);
@@ -163,14 +174,20 @@ function App2() {
   }
 
   return (
-    <div className="App2" onLoad={onPageLoad}>
+    <div className="App2">
       <div className="Spotify Login/Logout"> 
         <h1>Spotify + React</h1>
         {console.log("access_token: " + access_token)}
         {console.log("logged in var: " + loggedIn)}
-        {loggedIn ? (<h4>You're logged in!</h4>) :
-        (
-            <button onClick={requestAuthorization}>Login!</button>
+        {loggedIn ? (
+            <div>
+                <h4>You're logged in!</h4>
+                <button onClick={logout}>Logout!</button>
+            </div>
+        ) : (
+            <div className="loggedOut">
+                <button onClick={requestAuthorization}>Login!</button>
+            </div>
         )}
         {/* <form onSubmit={searchArtists}>
           <input type="text" onChange={e => setSearchKey(e.target.value)}/>
