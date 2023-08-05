@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react';
+import React from "react";
 import axios from 'axios'; // handles HTTP request
 import logo from './logo.svg';
 import './App.css';
 import TestButton from './TestButton';
 import dotenv from 'react-dotenv';
+import Navbar from "./Navbar.js";
+import Footer from "./Footer.js";
+
 
 function App2() {
     // const db = process.env.MONGO_URI; // model for using .env
@@ -220,28 +224,36 @@ function App2() {
   
 
   return (
-    <div className="App2">
-      <div className="Spotify Login/Logout"> 
-        <h1>Spotify + React</h1>
+    <div>
+      <Navbar/>
+      <div className="app2-background">
+      <div className="login-widget"> 
+        <h3>Login to Spotify</h3>
+        <p>
+          Sign into your Spotify account to generate your first acrostic
+          playlist.
+        </p>
         {console.log("access_token: " + access_token)}
         {console.log("logged in var: " + loggedIn)}
         {loggedIn ? (
-            <div>
+            <div className="logged-in">
                 <h4>You're logged in!</h4>
                 <button onClick={logout}>Logout!</button>
                 <button onClick={createPlaylist}>Create a playlist</button>
             </div>
-        ) : (
-            <div className="loggedOut">
-                <button onClick={requestAuthorization}>Login!</button>
-            </div>
-        )}
-        {/* <form onSubmit={searchArtists}>
-          <input type="text" onChange={e => setSearchKey(e.target.value)}/>
-          <button type={"submit"}>Search for Artists</button>
-        </form>
-        {renderArtists()} */}
+          ) : (
+              <div className="logged-out">
+                  <button onClick={requestAuthorization}>Click here</button>
+              </div>
+          )}
+          {/* <form onSubmit={searchArtists}>
+            <input type="text" onChange={e => setSearchKey(e.target.value)}/>
+            <button type={"submit"}>Search for Artists</button>
+          </form>
+          {renderArtists()} */}
+        </div>
       </div>
+      <Footer/>
     </div>
   );
 }
