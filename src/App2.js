@@ -4,16 +4,18 @@ import axios from 'axios'; // handles HTTP request
 import logo from './logo.svg';
 import './App.css';
 import TestButton from './TestButton';
-import dotenv from 'react-dotenv';
+import dotenv from 'react-dotenv'; // make sure to install react-dotenv
 import Navbar from "./Navbar.js";
 import Footer from "./Footer.js";
 
 
 function App2() {
     // const db = process.env.MONGO_URI; // model for using .env
-    const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
-    const CLIENT_SECRET = process.env.REACT_APP_CLIENT_SECRET;
-    const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
+  const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
+  const CLIENT_SECRET = process.env.REACT_APP_CLIENT_SECRET;
+  const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
+  console.log("redirect uri: " + REDIRECT_URI)
+  console.log("client ID: " + CLIENT_ID)
 
   const AUTHORIZE = "https://accounts.spotify.com/authorize";
   const TOKEN = "https://accounts.spotify.com/api/token";
@@ -83,7 +85,7 @@ function App2() {
     // client_secret = document.getElementById("clientSecret").value;
     // localStorage.setItem("client_id", client_id);
     // localStorage.setItem("client_secret", client_secret); // In a real app you should not expose your client_secret to the user
-
+    console.log("requesting auth in function around lines 80-100")
     let url = AUTHORIZE;
     url += "?client_id=" + CLIENT_ID;
     url += "&response_type=code";
@@ -198,28 +200,34 @@ function App2() {
 
    //////////////////////////////////// CHAT RECOMMENDATION BELOW
    
+   // testing the GET
+   callApi("GET", "https://api.spotify.com/v1/me", null, handleApiResponse);
+
+
     // First, make a call to the Spotify Web API to get the user's profile
-    callApi("GET", "https://api.spotify.com/v1/me", null, (response) => {
-      if (response && response.responseText) {
-        // The response will contain the user's profile information, including the user_id
-      const data = JSON.parse(response.responseText);
-      const user_id = data.id;
+    // callApi("GET", "https://api.spotify.com/v1/me", null, (response) => {
+    //   if (response && response.responseText) {
+    //     // The response will contain the user's profile information, including the user_id
+    //   const data = JSON.parse(response.responseText);
+    //   const user_id = data.id;
+    //   console.log("This is my user: " + user_id)
     
-      // Now that you have the user_id, you can use it to create the playlist
-      callApi(
-        "POST",
-        `https://api.spotify.com/v1/users/${user_id}/playlists`,
-        {
-          name: "Songcrostics Playlist",
-          description: "songcrostics experiment playlist description",
-          public: false,
-        },
-        handleApiResponse
-      );
-    } else {
-        console.log("error: no response from call")
-    }
-    });
+    //   // Now that you have the user_id, you can use it to create the playlist
+    //   // callApi(
+    //   //   "POST",
+    //   //   `https://api.spotify.com/v1/users/${user_id}/playlists`,
+    //   //   {
+    //   //     name: "Songcrostics Playlist",
+    //   //     description: "songcrostics experiment playlist description",
+    //   //     public: false,
+    //   //   },
+    //   //   handleApiResponse
+    //   // );
+    // } else {
+    //     console.log("error: no response from call")
+    //     console.log(response)
+    // }
+    // });
   }
   
 
