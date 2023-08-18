@@ -4,11 +4,14 @@ import logo from './logo.svg';
 import './App.css';
 import TestButton from './TestButton';
 
+
+// original version
+// -------------------------------- NO LONGER USED! -----------------------------
 function App() {
-  const CLIENT_ID = "c77e293321794990a3dc1349b1502d75";
-  const REDIRECT_URI = "http://localhost:3000";
-  const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
-  const RESPONSE_TYPE = "token";
+  // const CLIENT_ID = "c77e293321794990a3dc1349b1502d75";
+  // const REDIRECT_URI = "http://localhost:3000";
+  // const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
+  // const RESPONSE_TYPE = "token";
 
   const [searchKey, setSearchKey] = useState("");
   const [artists, setArtists] = useState([]);
