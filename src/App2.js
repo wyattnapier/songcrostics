@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import React from "react";
 import axios from 'axios'; // handles HTTP request
-import logo from './logo.svg';
 import './App.css';
-import TestButton from './TestButton';
 import dotenv from 'react-dotenv'; // make sure to install react-dotenv
 import Navbar from "./Navbar.js";
 import Footer from "./Footer.js";

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios'; // handles HTTP request
-import logo from './logo.svg';
 import './App.css';
-import TestButton from './TestButton';
 
 
 // original version
