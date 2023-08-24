@@ -127,7 +127,7 @@ function App() {
             access_token = data.access_token;
             localStorage.setItem("access_token", access_token);
         }
-        if ( data.refresh_token  != undefined ){
+        if ( data.refresh_token != undefined ){
             refresh_token = data.refresh_token;
             localStorage.setItem("refresh_token", refresh_token);
         }
@@ -155,7 +155,10 @@ function App() {
     xhr.open(method, url, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
-    xhr.send(body);
+
+    let jsonData = JSON.stringify(body);
+
+    xhr.send(jsonData);
     xhr.onload = callback;
   }
  
@@ -189,42 +192,49 @@ function App() {
        }
      * 
     */
-//    let user_id = null;
-//    let url = "https://api.spotify.com/v1/users/"+user_id+"/playlists"
-//    callApi("POST", "https://api.spotify.com/v1/users/me/playlists", {"name": "Songcrostics Playlist",
-//    "description": "songcrostics experiment playlist description",
-//    "public": false}, handleApiResponse)
+   let user_id = "wyatt~n.";
+  //  let url = "https://api.spotify.com/v1/users/"+user_id+"/playlists"
+  //  callApi(
+  //   "POST", url, 
+  //   { 
+  //     "name": "Songcrostics Playlist",
+  //     "description": "songcrostics experiment playlist description",
+  //     "public": false
+  //   }, handleApiResponse)
 
    //////////////////////////////////// CHAT RECOMMENDATION BELOW
    
-   // testing the GET
-   callApi("GET", "https://api.spotify.com/v1/me", null, handleApiResponse);
+  //  // testing the GET - woohoo!!
+  //  console.log("FROM INDEPENDENT GET:")
+   callApi("GET", "https://api.spotify.com/v1/me", null, handleApiResponse); //  this line works!
 
-
-    // First, make a call to the Spotify Web API to get the user's profile
-    // callApi("GET", "https://api.spotify.com/v1/me", null, (response) => {
-    //   if (response && response.responseText) {
-    //     // The response will contain the user's profile information, including the user_id
-    //   const data = JSON.parse(response.responseText);
-    //   const user_id = data.id;
-    //   console.log("This is my user: " + user_id)
+    /** First, make a call to the Spotify Web API to get the user's profile
+    * issue lies in the response at the moment
+    */
+  //   callApi("GET", "https://api.spotify.com/v1/me", null, (response) => {
+  //     if (response && response.responseText) {
+  //       // The response will contain the user's profile information, including the user_id
+  //     // const data = JSON.parse(response.responseText);
+  //     // const user_id = data.id;
+  //     // console.log("This is my user: " + user_id)
+  //     console.log(response)
     
-    //   // Now that you have the user_id, you can use it to create the playlist
-    //   // callApi(
-    //   //   "POST",
-    //   //   `https://api.spotify.com/v1/users/${user_id}/playlists`,
-    //   //   {
-    //   //     name: "Songcrostics Playlist",
-    //   //     description: "songcrostics experiment playlist description",
-    //   //     public: false,
-    //   //   },
-    //   //   handleApiResponse
-    //   // );
-    // } else {
-    //     console.log("error: no response from call")
-    //     console.log(response)
-    // }
-    // });
+      // Now that you have the user_id, you can use it to create the playlist
+      callApi(
+        "POST",
+        `https://api.spotify.com/v1/users/${user_id}/playlists`,
+        {
+          name: "Songcrostics Playlist",
+          description: "songcrostics experiment playlist description",
+          public: false,
+        },
+        handleApiResponse
+      );      
+  //   } else {
+  //       console.log("error: no response from call")
+  //       console.log(response)
+  //   }
+  //   });
   }
   
 
