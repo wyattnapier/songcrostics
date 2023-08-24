@@ -11,8 +11,6 @@ function App() {
   const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
   const CLIENT_SECRET = process.env.REACT_APP_CLIENT_SECRET;
   const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
-  console.log("redirect uri: " + REDIRECT_URI)
-  console.log("client ID: " + CLIENT_ID)
 
   const AUTHORIZE = "https://accounts.spotify.com/authorize";
   const TOKEN = "https://accounts.spotify.com/api/token";
@@ -41,7 +39,6 @@ function App() {
         handleRedirect();
     } else {
         access_token = localStorage.getItem("access_token");
-        console.log("access token right after getting set: " + access_token)
         if ( access_token == null ){
             // we don't have an access token so set the css display to not loggedIn?
             // !! ISSUES WITH THIS LINE !!
@@ -64,7 +61,6 @@ function App() {
         fetchAccessToken( code );
         window.history.pushState("", "", REDIRECT_URI); // remove param from url
         setLoggedIn(true);
-        console.log("changing the status of var loggedIn")
     }
 
     function getCode(){
@@ -82,7 +78,6 @@ function App() {
     // client_secret = document.getElementById("clientSecret").value;
     // localStorage.setItem("client_id", client_id);
     // localStorage.setItem("client_secret", client_secret); // In a real app you should not expose your client_secret to the user
-    console.log("requesting auth in function around lines 80-100")
     let url = AUTHORIZE;
     url += "?client_id=" + CLIENT_ID;
     url += "&response_type=code";
@@ -90,7 +85,6 @@ function App() {
     url += "&show_dialog=true";
     url += "&scope=user-read-private user-read-email user-modify-playback-state user-read-playback-position user-library-read streaming user-read-playback-state user-read-recently-played playlist-read-private playlist-modify-private playlist-modify-public";
     window.location.href = url; // Show Spotify's authorization screen
-    console.log("authorization requested");
   }
 
   function fetchAccessToken( code ){
@@ -139,14 +133,33 @@ function App() {
     }
   }
 
+  function handleUserDataResponse(){
+    if ( this.status == 200){
+        console.log("user info from json: " + this.responseText);
+        // return this.responseText; // just returns it to call api which isn't helpful
+    }
+    else if ( this.status == 204 ){
+        console.log("204")
+    }
+    else if ( this.status == 401 ){
+        console.log("401")
+        refreshAccessToken()
+    }
+    else {
+        console.log(this.responseText);
+        alert(this.responseText);
+    }    
+    // return "wyatt~n.";
+  }
+
   function logout () {
     /* 
     * can I remove data from local storage without making it crash or no?
     * This is currently a pseudo logout button, it doesn't actually do anything but change visuals tbh 
     */
-    // localStorage.removeItem("access_token")
-    // localStorage.removeItem("refresh_token")
     setLoggedIn(false)
+    access_token = null;
+    refresh_token = null;
     console.log("logging them fools out")
   }
 
@@ -192,7 +205,7 @@ function App() {
        }
      * 
     */
-   let user_id = "wyatt~n.";
+   let user_id = "boohoo"; // hardcoded for now (for me it is "wyatt~n.")
   //  let url = "https://api.spotify.com/v1/users/"+user_id+"/playlists"
   //  callApi(
   //   "POST", url, 
@@ -205,8 +218,12 @@ function App() {
    //////////////////////////////////// CHAT RECOMMENDATION BELOW
    
   //  // testing the GET - woohoo!!
-  //  console.log("FROM INDEPENDENT GET:")
-   callApi("GET", "https://api.spotify.com/v1/me", null, handleApiResponse); //  this line works!
+  callApi("GET", "https://api.spotify.com/v1/me", null, handleApiResponse);
+  let user_info = null;
+  user_info = callApi("GET", "https://api.spotify.com/v1/me", null, handleUserDataResponse);
+  console.log("user info: " + user_info)
+  // user_id = user_info.id;
+  console.log(user_id)
 
     /** First, make a call to the Spotify Web API to get the user's profile
     * issue lies in the response at the moment
@@ -248,8 +265,6 @@ function App() {
           Sign into your Spotify account to generate your first acrostic
           playlist.
         </p>
-        {console.log("access_token: " + access_token)}
-        {console.log("logged in var: " + loggedIn)}
         {loggedIn ? (
             <div className="logged-in">
                 <h4>You're logged in!</h4>
