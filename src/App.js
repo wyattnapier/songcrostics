@@ -88,7 +88,7 @@ function App() {
     url += "&response_type=code";
     url += "&redirect_uri=" + encodeURI(REDIRECT_URI);
     url += "&show_dialog=true";
-    url += "&scope=user-read-private user-library-read streaming playlist-modify-public playlist-read-private playlist-modify-private";
+    url += "&scope=user-read-private user-read-email user-modify-playback-state user-read-playback-position user-library-read streaming user-read-playback-state user-read-recently-played playlist-read-private playlist-modify-private playlist-modify-public";
     window.location.href = url; // Show Spotify's authorization screen
     console.log("authorization requested");
   }
