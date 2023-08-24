@@ -18,6 +18,7 @@ function App() {
 
   let access_token = null;
   let refresh_token = null;
+  let user_data = null;
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [searchKey, setSearchKey] = useState("");
@@ -136,10 +137,19 @@ function App() {
   function handleUserDataResponse(){
     if ( this.status == 200){
         console.log("user info from json: " + this.responseText);
-        // return this.responseText; // just returns it to call api which isn't helpful
-    }
-    else if ( this.status == 204 ){
-        console.log("204")
+        user_data = JSON.parse(this.responseText);
+        let user_id = user_data.id;
+        console.log("user data right after that: " + user_data);
+        callApi(
+          "POST",
+          `https://api.spotify.com/v1/users/${user_id}/playlists`,
+          {
+            name: "Songcrostics Playlist",
+            description: "songcrostics experiment playlist description",
+            public: true,
+          },
+          handleApiResponse
+        );
     }
     else if ( this.status == 401 ){
         console.log("401")
@@ -195,63 +205,7 @@ function App() {
   }
 
   function createPlaylist () {
-    /**
-     *  method: post
-     *  url: https://api.spotify.com/v1/users/{user_id}/playlists
-     * body: {
-        "name": "Songcrostics Playlist",
-        "description": "songcrostics experiment playlist description",
-        "public": false
-       }
-     * 
-    */
-   let user_id = "boohoo"; // hardcoded for now (for me it is "wyatt~n.")
-  //  let url = "https://api.spotify.com/v1/users/"+user_id+"/playlists"
-  //  callApi(
-  //   "POST", url, 
-  //   { 
-  //     "name": "Songcrostics Playlist",
-  //     "description": "songcrostics experiment playlist description",
-  //     "public": false
-  //   }, handleApiResponse)
-
-   //////////////////////////////////// CHAT RECOMMENDATION BELOW
-   
-  //  // testing the GET - woohoo!!
-  callApi("GET", "https://api.spotify.com/v1/me", null, handleApiResponse);
-  let user_info = null;
-  user_info = callApi("GET", "https://api.spotify.com/v1/me", null, handleUserDataResponse);
-  console.log("user info: " + user_info)
-  // user_id = user_info.id;
-  console.log(user_id)
-
-    /** First, make a call to the Spotify Web API to get the user's profile
-    * issue lies in the response at the moment
-    */
-  //   callApi("GET", "https://api.spotify.com/v1/me", null, (response) => {
-  //     if (response && response.responseText) {
-  //       // The response will contain the user's profile information, including the user_id
-  //     // const data = JSON.parse(response.responseText);
-  //     // const user_id = data.id;
-  //     // console.log("This is my user: " + user_id)
-  //     console.log(response)
-    
-      // Now that you have the user_id, you can use it to create the playlist
-      callApi(
-        "POST",
-        `https://api.spotify.com/v1/users/${user_id}/playlists`,
-        {
-          name: "Songcrostics Playlist",
-          description: "songcrostics experiment playlist description",
-          public: false,
-        },
-        handleApiResponse
-      );      
-  //   } else {
-  //       console.log("error: no response from call")
-  //       console.log(response)
-  //   }
-  //   });
+    callApi("GET", "https://api.spotify.com/v1/me", null, handleUserDataResponse); // specific callback response for creating playlists
   }
   
 
