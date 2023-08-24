@@ -21,10 +21,7 @@ function App() {
   let user_data = null;
 
   const [loggedIn, setLoggedIn] = useState(false);
-  const [searchKey, setSearchKey] = useState("");
-  const [artists, setArtists] = useState([]);
   const [acrosticString, setAcrosticString] = useState("");
-  const [playlistTitle, setPlaylistTitle] = useState("");
   const [tracks, setTracks] = useState([]);
 
   useEffect(() => {
@@ -33,8 +30,6 @@ function App() {
   }, []); // add dependencies to array if you want this to run more frequently
 
   function onPageLoad(){
-    // client_id = localStorage.getItem("client_id");
-    // client_secret = localStorage.getItem("client_secret");
     // if you haven't logged in yet:
     if ( window.location.search.length > 0 ){
         handleRedirect();
@@ -46,15 +41,6 @@ function App() {
             // document.getElementById("tokenSection").style.display = 'block'; 
         }
     }
-    //     else {
-    //         // we have an access token so present device section
-    //         document.getElementById("deviceSection").style.display = 'block';  
-    //         refreshDevices();
-    //         refreshPlaylists();
-    //         currentlyPlaying();
-    //     }
-    // }
-    // refreshRadioButtons();
   }
 
     function handleRedirect(){
@@ -88,7 +74,7 @@ function App() {
     window.location.href = url; // Show Spotify's authorization screen
   }
 
-  function fetchAccessToken( code ){
+  function fetchAccessToken( code ) {
     let body = "grant_type=authorization_code";
     body += "&code=" + code; 
     body += "&redirect_uri=" + encodeURI(REDIRECT_URI);
@@ -204,10 +190,16 @@ function App() {
     }    
   }
 
+  // form area
+  function handleAcrosticStringChange (e) {
+    setAcrosticString(e.target.value)
+  }
+
   function createPlaylist () {
     callApi("GET", "https://api.spotify.com/v1/me", null, handleUserDataResponse); // specific callback response for creating playlists
   }
   
+
 
   return (
     <div>
@@ -223,6 +215,24 @@ function App() {
             <div className="logged-in">
                 <h4>You're logged in!</h4>
                 <button onClick={logout}>Logout!</button>
+                <div className="user-input">
+                  <form onSubmit={createPlaylist}>
+                    <h3>Make some choices about your playlist: </h3>
+                    <textarea
+                      placeholder="Acrostic"
+                      value={acrosticString}
+                      onChange={handleAcrosticStringChange}
+                    />
+                    <select value={selectedStateCode} onChange={handleStateChange}>
+                      <option value=""> -- Select a Genre -- </option>
+                      {stateOptions.map((state) => (
+                        <option key={state.name} value={state.stateCode}>
+                          {state.name}
+                        </option>
+                      ))}
+                    </select>
+                  </form>
+                </div>
                 <button onClick={createPlaylist}>Create a playlist</button>
             </div>
           ) : (
