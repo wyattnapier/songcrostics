@@ -6,7 +6,6 @@ import dotenv from 'react-dotenv'; // make sure to install react-dotenv
 import Navbar from "./Navbar.js";
 import Footer from "./Footer.js";
 
-
 function App() {
     // const db = process.env.MONGO_URI; // model for using .env
   const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
@@ -89,7 +88,7 @@ function App() {
     url += "&response_type=code";
     url += "&redirect_uri=" + encodeURI(REDIRECT_URI);
     url += "&show_dialog=true";
-    url += "&scope=user-read-private user-read-email user-modify-playback-state user-read-playback-position user-library-read streaming user-read-playback-state user-read-recently-played playlist-read-private playlist-modify-private";
+    url += "&scope=user-read-private user-library-read streaming playlist-modify-public playlist-read-private playlist-modify-private";
     window.location.href = url; // Show Spotify's authorization screen
     console.log("authorization requested");
   }
