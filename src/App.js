@@ -22,7 +22,8 @@ function App() {
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [acrosticString, setAcrosticString] = useState("");
-  const [tracks, setTracks] = useState([]);
+  const [genre, setGenre] = useState(""); // eventually can use api get call to import a list of recommended genres
+  // const [tracks, setTracks] = useState([]);
 
   useEffect(() => {
     // code for when component is mounted (on page load)
@@ -194,6 +195,10 @@ function App() {
   function handleAcrosticStringChange (e) {
     setAcrosticString(e.target.value)
   }
+  function handleGenreChange (e) {
+    setGenre(e.target.value)
+  }
+
 
   function createPlaylist () {
     callApi("GET", "https://api.spotify.com/v1/me", null, handleUserDataResponse); // specific callback response for creating playlists
@@ -223,17 +228,19 @@ function App() {
                       value={acrosticString}
                       onChange={handleAcrosticStringChange}
                     />
-                    <select value={selectedStateCode} onChange={handleStateChange}>
+                    <select value={genre} onChange={handleGenreChange}>
                       <option value=""> -- Select a Genre -- </option>
-                      {stateOptions.map((state) => (
-                        <option key={state.name} value={state.stateCode}>
-                          {state.name}
-                        </option>
-                      ))}
+                      <option value="Alternative Rock">Alternative Rock</option>
+                      <option value="Folk">Folk</option>
+                      <option value="Indie pop">Indie pop</option>
+                      <option value="Rock">Rock</option>
+                      <option value="R&B">R&B</option>
                     </select>
+                    <div>
+                      <button onClick={createPlaylist}>Create a playlist</button> {/** This worked to create a playlist when it was all alone, not in the form */}
+                    </div>
                   </form>
                 </div>
-                <button onClick={createPlaylist}>Create a playlist</button>
             </div>
           ) : (
               <div className="logged-out">
