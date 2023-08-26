@@ -220,15 +220,19 @@ function App() {
             <div className="logged-in">
                 <h4>You're logged in!</h4>
                 <button onClick={logout}>Logout!</button>
+                {/** using w3 schools approach below */}
                 <div className="user-input">
                   <form onSubmit={createPlaylist}>
                     <h3>Make some choices about your playlist: </h3>
-                    <textarea
-                      placeholder="Acrostic"
-                      value={acrosticString}
-                      onChange={handleAcrosticStringChange}
-                    />
-                    <select value={genre} onChange={handleGenreChange}>
+                    <label> Enter your acrostic string:
+                      <input
+                        type="text"
+                        name="acrosticString"
+                        value={acrosticString || ""}
+                        onChange={(e) => setAcrosticString(e.target.value)}
+                      />
+                    </label>
+                    <select value={genre} onChange={(e) => setGenre(e.target.value)}>
                       <option value=""> -- Select a Genre -- </option>
                       <option value="Alternative Rock">Alternative Rock</option>
                       <option value="Folk">Folk</option>
@@ -236,9 +240,7 @@ function App() {
                       <option value="Rock">Rock</option>
                       <option value="R&B">R&B</option>
                     </select>
-                    <div>
-                      <button onClick={createPlaylist}>Create a playlist</button> {/** This worked to create a playlist when it was all alone, not in the form */}
-                    </div>
+                    <input type="submit" />
                   </form>
                 </div>
             </div>
