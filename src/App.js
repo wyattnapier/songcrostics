@@ -17,10 +17,8 @@ function App() {
   const RESPONSE_TYPE = "token";
 
   const [loggedIn, setLoggedIn] = useState(false);
-  const [acrosticString, setAcrosticString] = useState("Mo!");
+  const [acrosticString, setAcrosticString] = useState("Morgan!");
   const [genre, setGenre] = useState("Folk"); // eventually can use api get call to import a list of recommended genres
-  // const [tracks, setTracks] = useState([]);
-  // const VALID_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
   const VALID_CHARS = "abcdefghijklmnopqrstuvwxyz"
   let USER_ID = null;
   let playlist_id = null;
@@ -139,6 +137,8 @@ function App() {
     // console.log("logging them fools out")
   }
 
+  ////////////////////////////////// end of authorization section //////////////////////////////////
+
   function callApi(method, url, body){
     return new Promise((resolve, reject) => {
       let xhr = new XMLHttpRequest();
@@ -168,20 +168,6 @@ function App() {
       let jsonData = JSON.stringify(body);
       xhr.send(jsonData);
     })
-  }
- 
-  function handleApiResponse() {
-    if ( this.status == 200){
-        console.log(this.responseText);
-    }
-    else if ( this.status == 401 ){
-        console.log("401")
-        refreshAccessToken()
-    }
-    else {
-        console.log(this.responseText);
-        alert(this.responseText);
-    }    
   }
 
   // form area
@@ -213,20 +199,20 @@ function App() {
     }
   }
   
-  
   // main loop and function of program
   // could put final tracks array in here and then post to playlist at end of the while loop
   function postLoop () {
-    let currIndex = 0;
-    while(currIndex < acrosticString.length) {
+    let currIndex = acrosticString.length-1;
+    console.log("starting value of currIndex: " + currIndex)
+    while(currIndex >= 0) {
       let searchChar = acrosticString.charAt(currIndex).toLowerCase();
       if (VALID_CHARS.search(searchChar) === -1) {
-        currIndex++;
+        currIndex--;
         continue;
       }
       searchTracks(searchChar)
       // console.log("Current char at index " + currIndex + " is : " + searchChar)
-      currIndex++;
+      currIndex--;
     }
   }
   
@@ -255,7 +241,6 @@ function App() {
       // need to get playlist ID first --> playlist is being created seemingly after this runs
       let tracks = [`spotify:track:${validTrackID}`];
       console.log(tracks)
-      console.log("track to add: " + tracks[0])
       responseText = await callApi("POST", `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`, tracks);
       console.log("Success:", responseText);
     } catch (error) {
@@ -263,6 +248,7 @@ function App() {
     }
   }
 
+  ////////////////////////////////// JSX section //////////////////////////////////
 
   return (
     <div>
