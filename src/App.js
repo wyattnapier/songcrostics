@@ -17,7 +17,7 @@ function App() {
   const RESPONSE_TYPE = "token";
 
   const [loggedIn, setLoggedIn] = useState(false);
-  const [acrosticString, setAcrosticString] = useState("Mo!rgan");
+  const [acrosticString, setAcrosticString] = useState("Mo!");
   const [genre, setGenre] = useState("Folk"); // eventually can use api get call to import a list of recommended genres
   // const [tracks, setTracks] = useState([]);
   // const VALID_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
@@ -139,7 +139,7 @@ function App() {
     // console.log("logging them fools out")
   }
 
-  function callApi(method, url, body, callback){
+  function callApi(method, url, body){
     return new Promise((resolve, reject) => {
       let xhr = new XMLHttpRequest();
       xhr.open(method, url, true);
@@ -154,6 +154,9 @@ function App() {
           refreshAccessToken();
           reject(new Error(xhr.statusText));
         } else {
+          console.log("ERROR")
+          // console.log(xhr.responseText)
+          console.log(xhr.status)
           reject(new Error(xhr.statusText));
         }
       }
@@ -199,14 +202,10 @@ function App() {
       console.log("Success:", responseText);
       console.log("PLAYLIST CREATED")
       playlist_id =  JSON.parse(responseText).id;
-      console.log("playlist id: " + playlist_id)
+      console.log("Playlist ID: " + playlist_id);
 
       // start the postLoop
-
-  
-      // You can now proceed with the next steps of your logic
-      // callApi("GET", `https://api.spotify.com/v1/users/${USER_ID}/playlists`, null, handleGetPlaylistIDResponse);
-      // postLoop();
+      postLoop();
     } catch (error) {
       // Handle error here
       // You might want to consider refreshing the access token here
@@ -216,6 +215,7 @@ function App() {
   
   
   // main loop and function of program
+  // could put final tracks array in here and then post to playlist at end of the while loop
   function postLoop () {
     let currIndex = 0;
     while(currIndex < acrosticString.length) {
@@ -229,82 +229,40 @@ function App() {
       currIndex++;
     }
   }
-  function searchTracks (choppedChar) {
-    // api call works, now I just need a way to handle the respoonse
-      // while done == false
-        // validate that the first letter is the one we are searching for
-          // store track id
-          // make post call to add track to playlist
-          // done = true
-        // go to next letter
-    callApi("GET", `https://api.spotify.com/v1/search?q=${choppedChar}&type=track&market=US&limit=10`, null, handleApiSearch) // change offset to get more interesting results
-    return true;
-  }
-  // returning in a weird order
-  function handleApiSearch() {
-    if (this.status == 200){
-        let trackIndex = 0;
-        let search_data = JSON.parse(this.responseText);
-        // console.log("search data stringy" + JSON.stringify(search_data))
-        let searchChar = search_data.tracks.href.charAt(40); // could make this adaptive by searching for &type= then getting char at index before that
-        // console.log("search char: " + searchChar)
-        let validTrackID = null;
-        let validTrackName = null;
-        while (true) { // need to come up with a solution to too few results
-          let currTrack = search_data.tracks.items[trackIndex];
-          if (currTrack.name.charAt(0).toLowerCase() === searchChar) {
-            validTrackName = JSON.stringify(currTrack.name)
-            validTrackID = JSON.stringify(currTrack.id);
-            break;
-          }
-          trackIndex++;
-          if (trackIndex >= 10) {
-            break;
-          }
+  
+  async function searchTracks (choppedChar) {
+    try {
+      let responseText = await callApi("GET", `https://api.spotify.com/v1/search?q=${choppedChar}&type=track&market=US&limit=10`, null) // change offset to get more interesting results
+      console.log("Success:", responseText);
+      let trackIndex = 0;
+      let search_data = JSON.parse(responseText);
+      let searchChar = search_data.tracks.href.charAt(40); // could make this adaptive by searching for &type= then getting char at index before that
+      let validTrackID = null;
+      let validTrackName = null;
+      while (true) { // need to come up with a solution to too few results
+        let currTrack = search_data.tracks.items[trackIndex];
+        if (currTrack.name.charAt(0).toLowerCase() === searchChar) {
+          validTrackName = currTrack.name;
+          validTrackID = currTrack.id;
+          break;
         }
-        console.log("track name: " + validTrackName + " and ID: " + validTrackID)
-        // need to get playlist ID first --> playlist is being created seemingly after this runs
-        console.log("playlist id before post: " + playlist_id)
-        callApi(
-          "GET",
-          `https://api.spotify.com/v1/playlists/${playlist_id}`,
-          null,
-          handleApiResponse
-        )
-
-        // callApi(
-        //   "POST", 
-        //   `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`,
-        //   [`spotify:track:${validTrackID}`], 
-        //   handleApiResponse
-        // )
+        trackIndex++;
+        if (trackIndex >= 10) {
+          break;
+        }
+      }
+      console.log("track name: " + validTrackName + " and ID: " + validTrackID)
+      // need to get playlist ID first --> playlist is being created seemingly after this runs
+      let tracks = [`spotify:track:${validTrackID}`];
+      console.log(tracks)
+      console.log("track to add: " + tracks[0])
+      responseText = await callApi("POST", `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`, tracks);
+      console.log("Success:", responseText);
+    } catch (error) {
+      console.log("Error: " + error)
     }
-    else if ( this.status == 401 ){
-        console.log("401")
-        refreshAccessToken()
-    }
-    else {
-        console.log(this.responseText);
-        alert(this.responseText);
-    }    
   }
 
-  function handlePlaylistCreationResponse() {
-    if ( this.status == 201){
-        console.log("PLAYLIST CREATED")
-        console.log(this.response)
-        playlist_id =  JSON.parse(this.response).id;
-        console.log("playlist id: " + playlist_id)
-    }
-    else if ( this.status == 401 ){
-        console.log("401")
-        refreshAccessToken()
-    }
-    else {
-        console.log("we got problems uploading?" + this.responseText);
-        alert(this.responseText);
-    }    
-  }
 
   return (
     <div>
