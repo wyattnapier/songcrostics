@@ -22,6 +22,8 @@ function App() {
   // const [tracks, setTracks] = useState([]);
   // const VALID_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
   const VALID_CHARS = "abcdefghijklmnopqrstuvwxyz"
+  let USER_ID = null;
+  let playlist_id = null;
 
   let access_token=localStorage.getItem("access_token"); //  keeps setting to null when form is filled out or the page reloads
   let refresh_token = localStorage.getItem("refresh_token"); // keeps resetting to null when form is filled out when page rerenders
@@ -37,7 +39,7 @@ function App() {
         console.log("window.location.search.length > 0")
         handleRedirect();
     } else {
-        console.log("WINDOW.LOCATION.SEARCH.LENGTH <= 0 \nAccess token: " + access_token + "\nRefresh token: " + refresh_token)
+        // console.log("WINDOW.LOCATION.SEARCH.LENGTH <= 0 \nAccess token: " + access_token + "\nRefresh token: " + refresh_token)
         access_token = localStorage.getItem("access_token");
         if ( access_token == null ){
             // we don't have an access token so set the css display to not loggedIn?
@@ -51,7 +53,7 @@ function App() {
         let code = getCode();
         fetchAccessToken( code );
         window.history.pushState("", "", REDIRECT_URI); // remove param from url
-        console.log("IN HANDLE REDIRECT: \nAccess token: " + access_token + "\nRefresh token: " + refresh_token)
+        // console.log("IN HANDLE REDIRECT: \nAccess token: " + access_token + "\nRefresh token: " + refresh_token)
         setLoggedIn(true);
     }
 
@@ -108,7 +110,7 @@ function App() {
   function handleAuthorizationResponse(){
     if ( this.status == 200 ){
         var data = JSON.parse(this.responseText);
-        console.log("JSON DATA: " + JSON.stringify(data));
+        // console.log("JSON DATA: " + JSON.stringify(data));
         if ( data.access_token != undefined ){
             access_token = data.access_token;
             localStorage.setItem("access_token", access_token);
@@ -117,7 +119,7 @@ function App() {
             refresh_token = data.refresh_token;
             localStorage.setItem("refresh_token", refresh_token);
         }
-        console.log("IN HANDLE AUTH RESPONSE: \nAccess token: " + access_token + "\nRefresh token: " + refresh_token)
+        // console.log("IN HANDLE AUTH RESPONSE: \nAccess token: " + access_token + "\nRefresh token: " + refresh_token)
         onPageLoad();
     }
     else {
@@ -131,6 +133,7 @@ function App() {
         console.log("user info from json: " + this.responseText);
         let user_data = JSON.parse(this.responseText);
         let user_id = user_data.id;
+        USER_ID = user_id;
         console.log("user data right after that: " + user_data);
         callApi(
           "POST",
@@ -140,7 +143,7 @@ function App() {
             description: "songcrostics experiment playlist description",
             public: true,
           },
-          handleApiResponse
+          handlePlaylistCreationResponse
         );
     }
     else if ( this.status == 401 ){
@@ -160,9 +163,9 @@ function App() {
     * This is currently a pseudo logout button, it doesn't actually do anything but change visuals tbh 
     */
     setLoggedIn(false)
-    // access_token = null;
-    // refresh_token = null;
-    console.log("logging them fools out")
+    access_token = null;
+    refresh_token = null;
+    // console.log("logging them fools out")
   }
 
   function callApi(method, url, body, callback){
@@ -170,21 +173,14 @@ function App() {
     xhr.open(method, url, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
-
     let jsonData = JSON.stringify(body);
-
     xhr.send(jsonData);
     xhr.onload = callback;
   }
  
-  function handleApiResponse(){
+  function handleApiResponse() {
     if ( this.status == 200){
         console.log(this.responseText);
-        // setTimeout(currentlyPlaying, 2000);
-    }
-    else if ( this.status == 204 ){
-        console.log("204")
-        // setTimeout(currentlyPlaying, 2000);
     }
     else if ( this.status == 401 ){
         console.log("401")
@@ -199,6 +195,7 @@ function App() {
   // form area
   function createPlaylist () {
     callApi("GET", "https://api.spotify.com/v1/me", null, handleUserDataResponse); // specific callback response for creating playlists
+    // callApi("GET", `https://api.spotify.com/v1/users/${USER_ID}/playlists`, null, handleGetPlaylistIDResponse) // use this to get playlist_id --> response handler doens't exist
     postLoop();
   }
   
@@ -207,22 +204,94 @@ function App() {
     let currIndex = 0;
     while(currIndex < acrosticString.length) {
       let searchChar = acrosticString.charAt(currIndex).toLowerCase();
-      if(VALID_CHARS.search(searchChar) === -1) {
+      if (VALID_CHARS.search(searchChar) === -1) {
         currIndex++;
         continue;
       }
+      searchTracks(searchChar)
       // console.log("Current char at index " + currIndex + " is : " + searchChar)
       currIndex++;
     }
   }
   function searchTracks (choppedChar) {
-    callApi("GET", `https://api.spotify.com/v1/search?q=${choppedChar}&type=track&market=US&limit=10`, null, handleApiResponse)
+    // api call works, now I just need a way to handle the respoonse
+      // while done == false
+        // validate that the first letter is the one we are searching for
+          // store track id
+          // make post call to add track to playlist
+          // done = true
+        // go to next letter
+    callApi("GET", `https://api.spotify.com/v1/search?q=${choppedChar}&type=track&market=US&limit=10`, null, handleApiSearch) // change offset to get more interesting results
     return true;
+  }
+  // returning in a weird order
+  function handleApiSearch() {
+    if (this.status == 200){
+        let trackIndex = 0;
+        let search_data = JSON.parse(this.responseText);
+        // console.log("search data stringy" + JSON.stringify(search_data))
+        let searchChar = search_data.tracks.href.charAt(40); // could make this adaptive by searching for &type= then getting char at index before that
+        // console.log("search char: " + searchChar)
+        let validTrackID = null;
+        let validTrackName = null;
+        while (true) { // need to come up with a solution to too few results
+          let currTrack = search_data.tracks.items[trackIndex];
+          if (currTrack.name.charAt(0).toLowerCase() === searchChar) {
+            validTrackName = JSON.stringify(currTrack.name)
+            validTrackID = JSON.stringify(currTrack.id);
+            break;
+          }
+          trackIndex++;
+          if (trackIndex >= 10) {
+            break;
+          }
+        }
+        console.log("track name: " + validTrackName + " and ID: " + validTrackID)
+        // need to get playlist ID first
+        // callApi(
+        //   "POST", 
+        //   `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`,
+        //   [`spotify:track:${validTrackID}`], 
+        //   handleApiResponse
+        // )
+    }
+    else if ( this.status == 401 ){
+        console.log("401")
+        refreshAccessToken()
+    }
+    else {
+        console.log(this.responseText);
+        alert(this.responseText);
+    }    
+  }
+
+  function handlePlaylistCreationResponse() {
+    if ( this.status == 200){
+        console.log("PLAYLIST CREATED")
+        console.log(this.response)
+        playlist_id = this.response.id;
+        console.log("playlist id: " + playlist_id)
+        // playlist_id = JSON.stringify(this.responseText.items[0].id);
+    }
+    else if ( this.status == 401 ){
+        console.log("401")
+        refreshAccessToken()
+    }
+    else {
+        console.log("we got problems uploading?" + this.responseText);
+        alert(this.responseText);
+        playlist_id =  JSON.parse(this.response).id;
+        console.log("playlist id og: " + playlist_id)
+        // console.log("playlist id 5: " + JSON.parse(this.responseText).id)
+        // console.log("playlist id 6: " + JSON.stringify(JSON.parse(this.response).id))
+        // console.log("playlist id 7: " + JSON.parse(this.responseText).id)
+        // console.log("playlist id 8: " + JSON.stringify(JSON.parse(this.responseText).id))
+    }    
   }
 
   return (
     <div>
-      {console.log("Access token: " + access_token + "\n Refresh token: " + refresh_token)}
+      {/* {console.log("Access token: " + access_token + "\n Refresh token: " + refresh_token)} */}
       <Navbar/>
       <div className="app2-background">
       <div className="login-widget"> 
