@@ -125,6 +125,13 @@ div .login-widget p {
   padding-bottom:40px;
 }
 
+div .logged-out {
+  color: var(--lightTone);
+  text-align: center;
+  align-items: center;
+  justify-content: center;
+}
+
 div .logged-out button {
   background-color:var(--accentColor);
   color:var(--lightTone);
