@@ -128,35 +128,6 @@ function App() {
     }
   }
 
-  function handleUserDataResponse(){
-    if ( this.status == 200){
-        console.log("user info from json: " + this.responseText);
-        let user_data = JSON.parse(this.responseText);
-        let user_id = user_data.id;
-        USER_ID = user_id;
-        console.log("user data right after that: " + user_data);
-        callApi(
-          "POST",
-          `https://api.spotify.com/v1/users/${user_id}/playlists`,
-          {
-            name: "Songcrostics Playlist",
-            description: "songcrostics experiment playlist description",
-            public: true,
-          },
-          handlePlaylistCreationResponse
-        );
-    }
-    else if ( this.status == 401 ){
-        console.log("401")
-        refreshAccessToken()
-    }
-    else {
-        console.log(this.responseText);
-        alert(this.responseText);
-    }    
-    // return "wyatt~n.";
-  }
-
   function logout () {
     /* 
     * can I remove data from local storage without making it crash or no?
@@ -169,13 +140,31 @@ function App() {
   }
 
   function callApi(method, url, body, callback){
-    let xhr = new XMLHttpRequest();
-    xhr.open(method, url, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
-    let jsonData = JSON.stringify(body);
-    xhr.send(jsonData);
-    xhr.onload = callback;
+    return new Promise((resolve, reject) => {
+      let xhr = new XMLHttpRequest();
+      xhr.open(method, url, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
+
+      xhr.onload = () => {
+        if(xhr.status >= 200 && xhr.status < 300) {
+          // add conditionals based off of callback value?
+          resolve(xhr.response);
+        } else if (xhr.status == 401) {
+          refreshAccessToken();
+          reject(new Error(xhr.statusText));
+        } else {
+          reject(new Error(xhr.statusText));
+        }
+      }
+
+      xhr.onerror = function () {
+        reject(new Error('Network error'));
+      };
+
+      let jsonData = JSON.stringify(body);
+      xhr.send(jsonData);
+    })
   }
  
   function handleApiResponse() {
@@ -193,11 +182,38 @@ function App() {
   }
 
   // form area
-  function createPlaylist () {
-    callApi("GET", "https://api.spotify.com/v1/me", null, handleUserDataResponse); // specific callback response for creating playlists
-    // callApi("GET", `https://api.spotify.com/v1/users/${USER_ID}/playlists`, null, handleGetPlaylistIDResponse) // use this to get playlist_id --> response handler doens't exist
-    postLoop();
+  async function createPlaylist() {
+    try {
+      // get user_id
+      let responseText = await callApi("GET", "https://api.spotify.com/v1/me", null);
+      console.log("Success:", responseText);
+      USER_ID = JSON.parse(responseText).id;
+      console.log(USER_ID);
+
+      // create playlist and get playlist_id
+      responseText = await callApi("POST", `https://api.spotify.com/v1/users/${USER_ID}/playlists`, {
+            name: "Songcrostics Playlist",
+            description: "songcrostics experiment playlist description",
+            public: true }
+        );
+      console.log("Success:", responseText);
+      console.log("PLAYLIST CREATED")
+      playlist_id =  JSON.parse(responseText).id;
+      console.log("playlist id: " + playlist_id)
+
+      // start the postLoop
+
+  
+      // You can now proceed with the next steps of your logic
+      // callApi("GET", `https://api.spotify.com/v1/users/${USER_ID}/playlists`, null, handleGetPlaylistIDResponse);
+      // postLoop();
+    } catch (error) {
+      // Handle error here
+      // You might want to consider refreshing the access token here
+      console.error("Error:", error);
+    }
   }
+  
   
   // main loop and function of program
   function postLoop () {
