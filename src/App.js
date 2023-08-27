@@ -279,7 +279,6 @@ function App() {
         console.log(this.response)
         playlist_id =  JSON.parse(this.response).id;
         console.log("playlist id: " + playlist_id)
-        // playlist_id = JSON.stringify(this.responseText.items[0].id);
     }
     else if ( this.status == 401 ){
         console.log("401")
