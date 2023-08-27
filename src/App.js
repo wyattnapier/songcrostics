@@ -7,7 +7,6 @@ import Navbar from "./Navbar.js";
 import Footer from "./Footer.js";
 
 function App() {
-    // const db = process.env.MONGO_URI; // model for using .env
   const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
   const CLIENT_SECRET = process.env.REACT_APP_CLIENT_SECRET;
   const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
@@ -17,10 +16,10 @@ function App() {
   const RESPONSE_TYPE = "token";
 
   const [loggedIn, setLoggedIn] = useState(false);
+  const [playlistCompleted, setPlaylistCompleted] = useState(false);
   const [acrosticString, setAcrosticString] = useState("Morgan!");
   const [genre, setGenre] = useState("Folk"); // eventually can use api get call to import a list of recommended genres
   const VALID_CHARS = "abcdefghijklmnopqrstuvwxyz"
-  let USER_ID = null;
   let playlist_id = null;
 
   let access_token=localStorage.getItem("access_token"); //  keeps setting to null when form is filled out or the page reloads
@@ -127,14 +126,9 @@ function App() {
   }
 
   function logout () {
-    /* 
-    * can I remove data from local storage without making it crash or no?
-    * This is currently a pseudo logout button, it doesn't actually do anything but change visuals tbh 
-    */
     setLoggedIn(false)
     access_token = null;
     refresh_token = null;
-    // console.log("logging them fools out")
   }
 
   ////////////////////////////////// end of authorization section //////////////////////////////////
@@ -148,14 +142,12 @@ function App() {
 
       xhr.onload = () => {
         if(xhr.status >= 200 && xhr.status < 300) {
-          // add conditionals based off of callback value?
           resolve(xhr.response);
         } else if (xhr.status == 401) {
           refreshAccessToken();
           reject(new Error(xhr.statusText));
         } else {
           console.log("ERROR")
-          // console.log(xhr.responseText)
           console.log(xhr.status)
           reject(new Error(xhr.statusText));
         }
@@ -176,7 +168,7 @@ function App() {
       // get user_id
       let responseText = await callApi("GET", "https://api.spotify.com/v1/me", null);
       console.log("Success:", responseText);
-      USER_ID = JSON.parse(responseText).id;
+      let USER_ID = JSON.parse(responseText).id;
       console.log(USER_ID);
 
       // create playlist and get playlist_id
@@ -218,6 +210,7 @@ function App() {
     console.log("Right before adding to the playlist tracks are: " + finalTracks.toString())
     let responseText = await callApi("POST", `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`, finalTracks);
     console.log("Success:", responseText);
+    setPlaylistCompleted(true);
   }
   
   async function searchTracks (choppedChar) {
@@ -260,6 +253,11 @@ function App() {
       <Navbar/>
       <div className="app2-background">
       <div className="login-widget"> 
+        {playlistCompleted ? 
+        <div>
+          <p>Woohoo it works!!!!!!!</p>
+        </div> : <div></div>
+        }
         {loggedIn ? (
             <div className="logged-in">
                 <h3>You're logged in!</h3>
