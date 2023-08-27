@@ -247,7 +247,15 @@ function App() {
           }
         }
         console.log("track name: " + validTrackName + " and ID: " + validTrackID)
-        // need to get playlist ID first
+        // need to get playlist ID first --> playlist is being created seemingly after this runs
+        console.log("playlist id before post: " + playlist_id)
+        callApi(
+          "GET",
+          `https://api.spotify.com/v1/playlists/${playlist_id}`,
+          null,
+          handleApiResponse
+        )
+
         // callApi(
         //   "POST", 
         //   `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`,
@@ -266,10 +274,10 @@ function App() {
   }
 
   function handlePlaylistCreationResponse() {
-    if ( this.status == 200){
+    if ( this.status == 201){
         console.log("PLAYLIST CREATED")
         console.log(this.response)
-        playlist_id = this.response.id;
+        playlist_id =  JSON.parse(this.response).id;
         console.log("playlist id: " + playlist_id)
         // playlist_id = JSON.stringify(this.responseText.items[0].id);
     }
@@ -280,12 +288,6 @@ function App() {
     else {
         console.log("we got problems uploading?" + this.responseText);
         alert(this.responseText);
-        playlist_id =  JSON.parse(this.response).id;
-        console.log("playlist id og: " + playlist_id)
-        // console.log("playlist id 5: " + JSON.parse(this.responseText).id)
-        // console.log("playlist id 6: " + JSON.stringify(JSON.parse(this.response).id))
-        // console.log("playlist id 7: " + JSON.parse(this.responseText).id)
-        // console.log("playlist id 8: " + JSON.stringify(JSON.parse(this.responseText).id))
     }    
   }
 
