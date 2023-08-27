@@ -16,14 +16,15 @@ function App() {
   const TOKEN = "https://accounts.spotify.com/api/token";
   const RESPONSE_TYPE = "token";
 
-  let access_token = null;
-  let refresh_token = null;
-  let user_data = null;
-
   const [loggedIn, setLoggedIn] = useState(false);
-  const [acrosticString, setAcrosticString] = useState("");
-  const [genre, setGenre] = useState(""); // eventually can use api get call to import a list of recommended genres
+  const [acrosticString, setAcrosticString] = useState("Mo!rgan");
+  const [genre, setGenre] = useState("Folk"); // eventually can use api get call to import a list of recommended genres
   // const [tracks, setTracks] = useState([]);
+  // const VALID_CHARS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+  const VALID_CHARS = "abcdefghijklmnopqrstuvwxyz"
+
+  let access_token=localStorage.getItem("access_token"); //  keeps setting to null when form is filled out or the page reloads
+  let refresh_token = localStorage.getItem("refresh_token"); // keeps resetting to null when form is filled out when page rerenders
 
   useEffect(() => {
     // code for when component is mounted (on page load)
@@ -33,8 +34,10 @@ function App() {
   function onPageLoad(){
     // if you haven't logged in yet:
     if ( window.location.search.length > 0 ){
+        console.log("window.location.search.length > 0")
         handleRedirect();
     } else {
+        console.log("WINDOW.LOCATION.SEARCH.LENGTH <= 0 \nAccess token: " + access_token + "\nRefresh token: " + refresh_token)
         access_token = localStorage.getItem("access_token");
         if ( access_token == null ){
             // we don't have an access token so set the css display to not loggedIn?
@@ -48,6 +51,7 @@ function App() {
         let code = getCode();
         fetchAccessToken( code );
         window.history.pushState("", "", REDIRECT_URI); // remove param from url
+        console.log("IN HANDLE REDIRECT: \nAccess token: " + access_token + "\nRefresh token: " + refresh_token)
         setLoggedIn(true);
     }
 
@@ -113,6 +117,7 @@ function App() {
             refresh_token = data.refresh_token;
             localStorage.setItem("refresh_token", refresh_token);
         }
+        console.log("IN HANDLE AUTH RESPONSE: \nAccess token: " + access_token + "\nRefresh token: " + refresh_token)
         onPageLoad();
     }
     else {
@@ -124,7 +129,7 @@ function App() {
   function handleUserDataResponse(){
     if ( this.status == 200){
         console.log("user info from json: " + this.responseText);
-        user_data = JSON.parse(this.responseText);
+        let user_data = JSON.parse(this.responseText);
         let user_id = user_data.id;
         console.log("user data right after that: " + user_data);
         callApi(
@@ -155,8 +160,8 @@ function App() {
     * This is currently a pseudo logout button, it doesn't actually do anything but change visuals tbh 
     */
     setLoggedIn(false)
-    access_token = null;
-    refresh_token = null;
+    // access_token = null;
+    // refresh_token = null;
     console.log("logging them fools out")
   }
 
@@ -192,37 +197,42 @@ function App() {
   }
 
   // form area
-  function handleAcrosticStringChange (e) {
-    setAcrosticString(e.target.value)
-  }
-  function handleGenreChange (e) {
-    setGenre(e.target.value)
-  }
-
-
   function createPlaylist () {
     callApi("GET", "https://api.spotify.com/v1/me", null, handleUserDataResponse); // specific callback response for creating playlists
+    postLoop();
   }
   
-
+  // main loop and function of program
+  function postLoop () {
+    let currIndex = 0;
+    while(currIndex < acrosticString.length) {
+      let searchChar = acrosticString.charAt(currIndex).toLowerCase();
+      if(VALID_CHARS.search(searchChar) === -1) {
+        currIndex++;
+        continue;
+      }
+      // console.log("Current char at index " + currIndex + " is : " + searchChar)
+      currIndex++;
+    }
+  }
+  function searchTracks (choppedChar) {
+    callApi("GET", `https://api.spotify.com/v1/search?q=${choppedChar}&type=track&market=US&limit=10`, null, handleApiResponse)
+    return true;
+  }
 
   return (
     <div>
+      {console.log("Access token: " + access_token + "\n Refresh token: " + refresh_token)}
       <Navbar/>
       <div className="app2-background">
       <div className="login-widget"> 
-        <h3>Login to Spotify</h3>
-        <p>
-          Sign into your Spotify account to generate your first acrostic
-          playlist.
-        </p>
         {loggedIn ? (
             <div className="logged-in">
-                <h4>You're logged in!</h4>
+                <h3>You're logged in!</h3>
                 <button onClick={logout}>Logout!</button>
                 {/** using w3 schools approach below */}
                 <div className="user-input">
-                  <form onSubmit={createPlaylist}>
+                  {/* <form onSubmit={createPlaylist}>
                     <h3>Make some choices about your playlist: </h3>
                     <label> Enter your acrostic string:
                       <input
@@ -241,11 +251,17 @@ function App() {
                       <option value="R&B">R&B</option>
                     </select>
                     <input type="submit" />
-                  </form>
+                  </form> */}
+                  <button onClick={createPlaylist}>Create a playlist!</button> {/** backup to make sure auth and general code actually works */}
                 </div>
             </div>
           ) : (
               <div className="logged-out">
+                  <h3>Login to Spotify</h3>
+                  <p>
+                    Sign into your Spotify account to generate your first acrostic
+                    playlist.
+                  </p>
                   <button onClick={requestAuthorization}>Click here</button>
               </div>
           )}
@@ -262,9 +278,3 @@ function App() {
 }
 
 export default App;
-
-/** 
- * activated format on save 
- * run code in terminal with yarn start
- * install axios with yarn add axios
-*/
