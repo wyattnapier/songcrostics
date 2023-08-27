@@ -201,8 +201,9 @@ function App() {
   
   // main loop and function of program
   // could put final tracks array in here and then post to playlist at end of the while loop
-  function postLoop () {
+  async function postLoop () {
     let currIndex = acrosticString.length-1;
+    let finalTracks = [acrosticString.length];
     console.log("starting value of currIndex: " + currIndex)
     while(currIndex >= 0) {
       let searchChar = acrosticString.charAt(currIndex).toLowerCase();
@@ -210,10 +211,13 @@ function App() {
         currIndex--;
         continue;
       }
-      searchTracks(searchChar)
+      finalTracks[currIndex] = await searchTracks(searchChar);
       // console.log("Current char at index " + currIndex + " is : " + searchChar)
       currIndex--;
     }
+    console.log("Right before adding to the playlist tracks are: " + finalTracks.toString())
+    let responseText = await callApi("POST", `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`, finalTracks);
+    console.log("Success:", responseText);
   }
   
   async function searchTracks (choppedChar) {
@@ -241,10 +245,10 @@ function App() {
       // need to get playlist ID first --> playlist is being created seemingly after this runs
       let tracks = [`spotify:track:${validTrackID}`];
       console.log(tracks)
-      responseText = await callApi("POST", `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`, tracks);
-      console.log("Success:", responseText);
+      return tracks[0];
     } catch (error) {
       console.log("Error: " + error)
+      return "error";
     }
   }
 
