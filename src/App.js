@@ -120,8 +120,7 @@ function App() {
         }
         // console.log("IN HANDLE AUTH RESPONSE: \nAccess token: " + access_token + "\nRefresh token: " + refresh_token)
         onPageLoad();
-    }
-    else {
+    } else {
         console.log(this.responseText);
         alert(this.responseText);
     }
@@ -144,7 +143,7 @@ function App() {
       xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
 
       xhr.onload = () => {
-        if(xhr.status >= 200 && xhr.status < 300) {
+        if(xhr.status >= 200 && xhr.status < 210) {
           resolve(xhr.response);
         } else if (xhr.status == 401) {
           refreshAccessToken();
@@ -261,6 +260,7 @@ function App() {
   
   async function searchTracks (choppedChar) {
     try {
+      choppedChar = choppedChar + '%';
       let responseText = await callApi("GET", `https://api.spotify.com/v1/search?q=${choppedChar}&type=track&market=US&limit=20&genre=${genre}`, null) // change offset to get more interesting results --> this had issues for alice
       console.log("Success:", responseText);
       let trackIndex = 0;
