@@ -18,8 +18,8 @@ function App() {
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [playlistCompleted, setPlaylistCompleted] = useState(false);
-  const [acrosticString, setAcrosticString] = useState("Bestoes");
-  const [genre, setGenre] = useState("pop"); // eventually can use api get call to import a list of recommended genres (all lowercase)
+  const [acrosticString, setAcrosticString] = useState("TechHeadDanYu");
+  const [genre, setGenre] = useState("rap"); // eventually can use api get call to import a list of recommended genres (all lowercase)
   const VALID_CHARS = "abcdefghijklmnopqrstuvwxyz"
   let playlist_id = null;
   let finalTracks = [];
@@ -267,6 +267,7 @@ function App() {
   
   async function searchTracks (choppedChar) {
     try {
+      choppedChar = choppedChar + '*' // this line breaks it
       let responseText = await callApi("GET", `https://api.spotify.com/v1/search?q=${choppedChar}&type=track&market=US&limit=20&genre=${genre}`, null) // change offset to get more interesting results
       console.log("Success:", responseText);
       let trackIndex = 0;
