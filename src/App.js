@@ -7,6 +7,7 @@ import Navbar from "./Navbar.js";
 import Footer from "./Footer.js";
 
 function App() {
+  // I'm wyatt
   const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
   const CLIENT_SECRET = process.env.REACT_APP_CLIENT_SECRET;
   const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
