@@ -19,7 +19,7 @@ function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [playlistCompleted, setPlaylistCompleted] = useState(false);
   const [acrosticString, setAcrosticString] = useState("Testing");
-  const [genre, setGenre] = useState("rap"); // eventually can use api get call to import a list of recommended genres (all lowercase)
+  const [genre, setGenre] = useState("pop"); // eventually can use api get call to import a list of recommended genres (all lowercase)
   const [playlistData, setPlaylistData] = useState([])
   const VALID_CHARS = "abcdefghijklmnopqrstuvwxyz"
 
@@ -345,7 +345,8 @@ function App() {
     let index = 0;
     console.log("track genres: " + trackGenres)
     while (index < trackGenres.length) {
-      if(genre === trackGenres[index]) {
+      let lowerVersion = trackGenres[index].toLowerCase();
+      if(lowerVersion.includes(genre)) { // tries to make it better at validating genre
         return true; // valid
       }
       index++;
@@ -398,7 +399,7 @@ function makeTableHTML(myArray) {
                 <button onClick={logout}>Logout!</button>
                 {/** using w3 schools approach below */}
                 <div className="user-input">
-                  {/* <form onSubmit={createPlaylist}>
+                  <form onSubmit={createPlaylist}>
                     <h3>Make some choices about your playlist: </h3>
                     <label> Enter your acrostic string:
                       <input
@@ -408,17 +409,21 @@ function makeTableHTML(myArray) {
                         onChange={(e) => setAcrosticString(e.target.value)}
                       />
                     </label>
-                    <select value={genre} onChange={(e) => setGenre(e.target.value)}> // // TODO fix genre application here
+                    {/* TODO: ADD/UPDATE THE GENRES BASED OFF OF SPOTIFY GENRES 
+                        REMEMBER THAT IT JUST SEARCHES FOR "INCLUDES" WHATEVER VALUE
+                    */}
+                    <select value={genre} onChange={(e) => setGenre(e.target.value)}>
                       <option value=""> -- Select a Genre -- </option>
-                      <option value="Alternative Rock">Alternative Rock</option>
-                      <option value="Folk">Folk</option>
-                      <option value="Indie pop">Indie pop</option>
-                      <option value="Rap">Rap</option>
-                      <option value="Rock">Rock</option>
-                      <option value="R&B">R&B</option>
+                      <option value="alternative rock">alternative rock</option>
+                      <option value="folk">folk</option>
+                      <option value="indie pop">indie pop</option>
+                      <option value="pop">pop</option>
+                      <option value="rap">rap</option>
+                      <option value="rock">rock</option>
+                      <option value="r&b">R&B</option>
                     </select>
-                    // <input type="submit" /> seems to cause errors
-                  </form> */}
+                    {/* <input type="submit" /> */}
+                  </form>
                   <button onClick={createPlaylist}>Create a playlist!</button> {/** backup to make sure auth and general code actually works */}
                 </div>
             </div>
