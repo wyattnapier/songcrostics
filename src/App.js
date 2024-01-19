@@ -25,7 +25,6 @@ function App() {
 
   let playlist_id = null;
   let finalTracks = [];
-  let twodplaylist_data = []; // holds data about final playlist @ morgan for JSX component
   let access_token=localStorage.getItem("access_token"); //  keeps setting to null when form is filled out or the page reloads
   let refresh_token = localStorage.getItem("refresh_token"); // keeps resetting to null when form is filled out when page rerenders
 
@@ -122,8 +121,7 @@ function App() {
         }
         // console.log("IN HANDLE AUTH RESPONSE: \nAccess token: " + access_token + "\nRefresh token: " + refresh_token)
         onPageLoad();
-    }
-    else {
+    } else {
         console.log(this.responseText);
         alert(this.responseText);
     }
@@ -146,7 +144,7 @@ function App() {
       xhr.setRequestHeader('Authorization', 'Bearer ' + access_token);
 
       xhr.onload = () => {
-        if(xhr.status >= 200 && xhr.status < 300) {
+        if(xhr.status >= 200 && xhr.status < 210) {
           resolve(xhr.response);
         } else if (xhr.status == 401) {
           refreshAccessToken();
@@ -251,9 +249,6 @@ function App() {
     responseText = await callApi("GET", `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`, null)
     console.log("Success: " + responseText);
     let playlist_details = JSON.parse(responseText)
-    // console.log(playlist_details.items)
-    // console.log(playlist_details.total)
-    // console.log(playlist_details.items[0].track.name)
     for(let i = 0; i < playlist_details.total; i++) {
       let trackName = playlist_details.items[i].track.name;
       let artistName = playlist_details.items[i].track.artists[0].name;
