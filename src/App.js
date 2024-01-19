@@ -20,7 +20,9 @@ function App() {
   const [playlistCompleted, setPlaylistCompleted] = useState(false);
   const [acrosticString, setAcrosticString] = useState("Testing");
   const [genre, setGenre] = useState("rap"); // eventually can use api get call to import a list of recommended genres (all lowercase)
+  const [playlistData, setPlaylistData] = useState([])
   const VALID_CHARS = "abcdefghijklmnopqrstuvwxyz"
+
   let playlist_id = null;
   let finalTracks = [];
   let twodplaylist_data = []; // holds data about final playlist @ morgan for JSX component
@@ -236,10 +238,9 @@ function App() {
         continue;
       }
       finalTracks[currIndex] = await searchTracks(searchChar); // add track returned from searchTracks to finalTracks array
-      // console.log("Current char at index " + currIndex + " is : " + searchChar)
       currIndex--;
     }
-    console.log("Right before adding to the playlist tracks are: " + finalTracks.toString())
+    // console.log("Right before adding to the playlist tracks are: " + finalTracks.toString())
     let responseText = await callApi("POST", `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`, finalTracks);
     // console.log("Success:", responseText);
 
@@ -256,9 +257,12 @@ function App() {
     for(let i = 0; i < playlist_details.total; i++) {
       let trackName = playlist_details.items[i].track.name;
       let artistName = playlist_details.items[i].track.artists[0].name;
-      twodplaylist_data.push([trackName, artistName]);
+      let trackImage = playlist_details.items[i].track.album.images[0].url;
+      let trackImageSize = playlist_details.items[i].track.album.images[0].height;
+      let tempData = playlistData;
+      tempData.push([trackName, artistName, trackImage, trackImageSize])
+      setPlaylistData(tempData)
     }
-    console.table(twodplaylist_data)
     setPlaylistCompleted(true);
   }
   
@@ -270,7 +274,7 @@ function App() {
     try {
       // choppedChar = choppedChar + '*' // this line breaks it and makes it so song recs don't match user --> literally searches for songs with asterisks
       let offsetIndex = Math.floor(Math.random() * 10);
-      let responseText = await callApi("GET", `https://api.spotify.com/v1/search?q=${choppedChar}&type=track&limit=20&genre=${genre}&offset=${offsetIndex}`, null) // vary offset to get more interesting results
+      let responseText = await callApi("GET", `https://api.spotify.com/v1/search?q=${choppedChar}&type=track&limit=20&genre=${genre}&offset=${offsetIndex}`, null) // vary offset to get more interesting results? might not do much actually
       console.log("Success:", responseText);
       let trackIndex = 0;
       let search_data = JSON.parse(responseText);
@@ -349,17 +353,43 @@ function App() {
     return false; // not valid
   }
 
+  // turn playlist data viewable 
+function makeTableHTML(myArray) {
+  return (
+    <table border="1">
+      <thead>
+        <tr>
+          <td>Track</td>
+          <td>Artist</td>
+          <td>Image URL</td>
+          <td>Image Size</td>
+        </tr>
+      </thead>
+      <tbody>
+        {myArray.map((row, rowIndex) => (
+          <tr key={rowIndex}>
+            {row.map((cell, cellIndex) => (
+              <td key={cellIndex}>{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+
   ////////////////////////////////// JSX section //////////////////////////////////
 
   return (
     <div>
-      {/* {console.log("Access token: " + access_token + "\n Refresh token: " + refresh_token)} */}
       <Navbar/>
       <div className="app2-background">
       <div className="login-widget"> 
         {playlistCompleted ? 
         <div>
           <p>Woohoo it works!!!!!!!</p>
+          {makeTableHTML(playlistData)} {/* This is where I put in the table to display song and artist */}    
         </div> : <div></div>
         }
         {loggedIn ? (
@@ -378,15 +408,16 @@ function App() {
                         onChange={(e) => setAcrosticString(e.target.value)}
                       />
                     </label>
-                    <select value={genre} onChange={(e) => setGenre(e.target.value)}>
+                    <select value={genre} onChange={(e) => setGenre(e.target.value)}> // // TODO fix genre application here
                       <option value=""> -- Select a Genre -- </option>
                       <option value="Alternative Rock">Alternative Rock</option>
                       <option value="Folk">Folk</option>
                       <option value="Indie pop">Indie pop</option>
+                      <option value="Rap">Rap</option>
                       <option value="Rock">Rock</option>
                       <option value="R&B">R&B</option>
                     </select>
-                    <input type="submit" />
+                    // <input type="submit" /> seems to cause errors
                   </form> */}
                   <button onClick={createPlaylist}>Create a playlist!</button> {/** backup to make sure auth and general code actually works */}
                 </div>
