@@ -7,6 +7,7 @@ import Navbar from "./Navbar.js";
 import Footer from "./Footer.js";
 
 function App() {
+  // I'm wyatt
   const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
   const CLIENT_SECRET = process.env.REACT_APP_CLIENT_SECRET;
   const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
@@ -17,13 +18,13 @@ function App() {
 
   const [loggedIn, setLoggedIn] = useState(false);
   const [playlistCompleted, setPlaylistCompleted] = useState(false);
-  const [acrosticString, setAcrosticString] = useState("Bestoes");
+  const [acrosticString, setAcrosticString] = useState("Testing");
   const [genre, setGenre] = useState("pop"); // eventually can use api get call to import a list of recommended genres (all lowercase)
+  const [playlistData, setPlaylistData] = useState([])
   const VALID_CHARS = "abcdefghijklmnopqrstuvwxyz"
+
   let playlist_id = null;
   let finalTracks = [];
-  let twodplaylist_data = [["Track Name", "Artist Name"]]; // holds data about final playlist @ morgan for JSX component
-
   let access_token=localStorage.getItem("access_token"); //  keeps setting to null when form is filled out or the page reloads
   let refresh_token = localStorage.getItem("refresh_token"); // keeps resetting to null when form is filled out when page rerenders
 
@@ -35,7 +36,7 @@ function App() {
   function onPageLoad(){
     // if you haven't logged in yet:
     if ( window.location.search.length > 0 ){
-        console.log("window.location.search.length > 0")
+        // console.log("window.location.search.length > 0")
         handleRedirect();
     } else {
         // console.log("WINDOW.LOCATION.SEARCH.LENGTH <= 0 \nAccess token: " + access_token + "\nRefresh token: " + refresh_token)
@@ -197,10 +198,8 @@ function App() {
   async function createPlaylist() {
     try {
       // get user_id
-      let responseText = await callApi("GET", "https://api.spotify.com/v1/me", null);
-      console.log("Success:", responseText);
-      let USER_ID = JSON.parse(responseText).id;
-      console.log(USER_ID);
+      let responseText = await callApi("GET", "https://api.spotify.com/v1/me", null); // api call to get user info
+      let USER_ID = JSON.parse(responseText).id; // gets id from the api call
 
       // create playlist and get playlist_id
       responseText = await callApi("POST", `https://api.spotify.com/v1/users/${USER_ID}/playlists`, {
@@ -208,10 +207,7 @@ function App() {
             description: "songcrostics experiment playlist description",
             public: true }
         );
-      console.log("Success:", responseText);
-      console.log("PLAYLIST CREATED")
-      playlist_id =  JSON.parse(responseText).id;
-      console.log("Playlist ID: " + playlist_id);
+      playlist_id =  JSON.parse(responseText).id; // playlist_id gathered here!! important for later displaying the playlist that is gathered
 
       // start the postLoop
       postLoop();
@@ -222,46 +218,58 @@ function App() {
     }
   }
   
-  // main loop and function of program
   // could put final tracks array in here and then post to playlist at end of the while loop
+  /* main loop and function of program
+    iterates through the acrostic string, searches for tracks, and adds them to the playlist. 
+    works in reverse order so things get added to playlist in proper ordder
+    */
   async function postLoop () {
     let currIndex = acrosticString.length-1;
     finalTracks = [acrosticString.length];
-    console.log("starting value of currIndex: " + currIndex)
+    console.log("assigned genre: ", genre)
+    // console.log("starting value of currIndex: " + currIndex)
     while(currIndex >= 0) {
       let searchChar = acrosticString.charAt(currIndex).toLowerCase();
+      // if char isn't alpha then go to next char
       if (VALID_CHARS.search(searchChar) === -1) {
         currIndex--;
         continue;
       }
-      finalTracks[currIndex] = await searchTracks(searchChar);
-      // console.log("Current char at index " + currIndex + " is : " + searchChar)
+      finalTracks[currIndex] = await searchTracks(searchChar); // add track returned from searchTracks to finalTracks array
       currIndex--;
     }
-    console.log("Right before adding to the playlist tracks are: " + finalTracks.toString())
+    // console.log("Right before adding to the playlist tracks are: " + finalTracks.toString())
     let responseText = await callApi("POST", `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`, finalTracks);
-    console.log("Success:", responseText);
-    // responseText = await callImageApi("PUT", `https://api.spotify.com/v1/playlists/${playlist_id}/images`, coverImage)
+    // console.log("Success:", responseText);
+
+    // responseText = await callImageApi("PUT", `https://api.spotify.com/v1/playlists/${playlist_id}/images`, coverImage) // failed attempt at adding cover image
     // console.log("Image success: " + responseText)
+
     // get some data about the playlist:
     responseText = await callApi("GET", `https://api.spotify.com/v1/playlists/${playlist_id}/tracks`, null)
     console.log("Success: " + responseText);
     let playlist_details = JSON.parse(responseText)
     for(let i = 0; i < playlist_details.total; i++) {
       let trackName = playlist_details.items[i].track.name;
-      let artistName = playlist_details.items[i].track.artists[0].name; // there are more artists, just choosing to only show primary atm
-      twodplaylist_data.push([trackName, artistName]);
+      let artistName = playlist_details.items[i].track.artists[0].name;
+      let trackImage = playlist_details.items[i].track.album.images[0].url;
+      let trackImageSize = playlist_details.items[i].track.album.images[0].height;
+      let tempData = playlistData;
+      tempData.push([trackName, artistName, trackImage, trackImageSize])
+      setPlaylistData(tempData)
     }
-    console.table(twodplaylist_data)
-    // add a cover image here to really polish it off
     setPlaylistCompleted(true);
-
   }
   
+  /* as you might expect it searches for tracks based off of the one starting character
+  it then tries to validate the track and keeps searching until a valid track is found
+  this is the real meat of the program and likely root of my problems
+  */
   async function searchTracks (choppedChar) {
     try {
-      choppedChar = choppedChar + '%';
-      let responseText = await callApi("GET", `https://api.spotify.com/v1/search?q=${choppedChar}&type=track&market=US&limit=20&genre=${genre}`, null) // change offset to get more interesting results --> this had issues for alice
+      // choppedChar = choppedChar + '*' // this line breaks it and makes it so song recs don't match user --> literally searches for songs with asterisks
+      let offsetIndex = Math.floor(Math.random() * 10);
+      let responseText = await callApi("GET", `https://api.spotify.com/v1/search?q=${choppedChar}&type=track&limit=20&genre=${genre}&offset=${offsetIndex}`, null) // vary offset to get more interesting results? might not do much actually
       console.log("Success:", responseText);
       let trackIndex = 0;
       let search_data = JSON.parse(responseText);
@@ -274,8 +282,9 @@ function App() {
         if (currTrack.name.charAt(0).toLowerCase() === searchChar ) { // include genre right here
           validTrackName = currTrack.name;
           validTrackID = currTrack.id;
-          validTrackGenres = currTrack.genres;
-          if(!validateTrack(`spotify:track:${validTrackID}`)) { // or include genre here  || !validateGenre(validTrackGenres
+          validTrackGenres = await getGenresForTrack(validTrackID); // track genres are super niche tho hmmm
+          console.log("valid track genres: ",validTrackGenres)
+          if(!validateTrack(`spotify:track:${validTrackID}`)  || (!validateGenre(validTrackGenres))) { // include genre here -->  || (!validateGenre(validTrackGenres))
             trackIndex++;
             continue;
           }
@@ -294,6 +303,25 @@ function App() {
     }
   }
 
+  async function getGenresForTrack(trackId) {
+    try {
+      const response = await callApi("GET", `https://api.spotify.com/v1/tracks/${trackId}`, null);
+      const trackData = JSON.parse(response);
+      const artistId = trackData.artists[0].id; // Assuming only one artist for simplicity
+      
+      const artistResponse = await callApi("GET", `https://api.spotify.com/v1/artists/${artistId}`, null);
+      const artistData = JSON.parse(artistResponse);
+  
+      return artistData.genres;
+    } catch (error) {
+      console.error('Error:', error);
+      return [];
+    }
+  }
+
+  /* checks if track isn't already in the playlist  
+  returns false if it is already in the playlist,  
+  true (that it can be added) if so */
   function validateTrack ( trackID ) {
     let index = 0;
     while (index < finalTracks.length) {
@@ -304,11 +332,16 @@ function App() {
     }
     return true; // valid
   }
+
+  /* checks if the genres of the playlist matches desired genre 
+    iterates through the genres listed under one track
+    returns true if one of them matches */
   function validateGenre ( trackGenres ) {
     let index = 0;
     console.log("track genres: " + trackGenres)
     while (index < trackGenres.length) {
-      if(genre === trackGenres[index]) {
+      let lowerVersion = trackGenres[index].toLowerCase();
+      if(lowerVersion.includes(genre)) { // tries to make it better at validating genre
         return true; // valid
       }
       index++;
@@ -316,19 +349,43 @@ function App() {
     return false; // not valid
   }
 
+  // turn playlist data viewable 
+function makeTableHTML(myArray) {
+  return (
+    <table border="1">
+      <thead>
+        <tr>
+          <td>Track</td>
+          <td>Artist</td>
+          <td>Image URL</td>
+          <td>Image Size</td>
+        </tr>
+      </thead>
+      <tbody>
+        {myArray.map((row, rowIndex) => (
+          <tr key={rowIndex}>
+            {row.map((cell, cellIndex) => (
+              <td key={cellIndex}>{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+
   ////////////////////////////////// JSX section //////////////////////////////////
 
   return (
     <div>
-      {/* {console.log("Access token: " + access_token + "\n Refresh token: " + refresh_token)} */}
       <Navbar/>
       <div className="app2-background">
       <div className="login-widget"> 
         {playlistCompleted ? 
         <div>
           <p>Woohoo it works!!!!!!!</p>
-          <h4>Here comes some data</h4>
-          {/** NO DATA WORKING IN HERE :(( */}
+          {makeTableHTML(playlistData)} {/* This is where I put in the table to display song and artist */}    
         </div> : <div></div>
         }
         {loggedIn ? (
@@ -337,7 +394,7 @@ function App() {
                 <button onClick={logout}>Logout!</button>
                 {/** using w3 schools approach below */}
                 <div className="user-input">
-                  {/* <form onSubmit={createPlaylist}>
+                  <form onSubmit={createPlaylist}>
                     <h3>Make some choices about your playlist: </h3>
                     <label> Enter your acrostic string:
                       <input
@@ -347,16 +404,21 @@ function App() {
                         onChange={(e) => setAcrosticString(e.target.value)}
                       />
                     </label>
+                    {/* TODO: ADD/UPDATE THE GENRES BASED OFF OF SPOTIFY GENRES 
+                        REMEMBER THAT IT JUST SEARCHES FOR "INCLUDES" WHATEVER VALUE
+                    */}
                     <select value={genre} onChange={(e) => setGenre(e.target.value)}>
                       <option value=""> -- Select a Genre -- </option>
-                      <option value="Alternative Rock">Alternative Rock</option>
-                      <option value="Folk">Folk</option>
-                      <option value="Indie pop">Indie pop</option>
-                      <option value="Rock">Rock</option>
-                      <option value="R&B">R&B</option>
+                      <option value="alternative rock">alternative rock</option>
+                      <option value="folk">folk</option>
+                      <option value="indie pop">indie pop</option>
+                      <option value="pop">pop</option>
+                      <option value="rap">rap</option>
+                      <option value="rock">rock</option>
+                      <option value="r&b">R&B</option>
                     </select>
-                    <input type="submit" />
-                  </form> */}
+                    {/* <input type="submit" /> */}
+                  </form>
                   <button onClick={createPlaylist}>Create a playlist!</button> {/** backup to make sure auth and general code actually works */}
                 </div>
             </div>
